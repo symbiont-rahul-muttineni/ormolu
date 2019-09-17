@@ -5,14 +5,14 @@ data Foo
         fooY :: Int, -- ^ Y
         fooBar, fooBaz :: NonEmpty (Identity Bool), -- ^ BarBaz
         fooGag,
-        fooGog
-          :: NonEmpty
-               ( Indentity
-                   Bool
-               ),
+        fooGog ::
+          NonEmpty
+            ( Indentity
+                Bool
+            ),
         -- ^ GagGog
         fooFoo,
-        barBar
-          :: Int -- ^ Huh!
+        barBar ::
+          Int -- ^ Huh!
       }
   deriving (Eq, Show)

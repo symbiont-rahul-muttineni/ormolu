@@ -76,9 +76,9 @@ p_classDecl ctx name tvars fixity fdeps csigs cdefs cats catdefs = do
 p_classContext :: LHsContext GhcPs -> R ()
 p_classContext ctx = unless (null (unLoc ctx)) $ do
   located ctx p_hsContext
-  breakpoint
-  txt "=>"
   space
+  txt "=>"
+  breakpoint
 
 p_classFundeps :: [Located (FunDep (Located RdrName))] -> R ()
 p_classFundeps fdeps = unless (null fdeps) $ do

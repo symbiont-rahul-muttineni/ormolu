@@ -28,12 +28,12 @@ p_hsType = \case
     sep space (located' p_hsTyVarBndr) bndrs
     txt "."
     breakpoint
-    vlayout (return ()) (txt "   ")
     p_hsType (unLoc t)
   HsQualTy NoExt qs t -> do
     located qs p_hsContext
-    breakpoint
+    space
     txt "=>"
+    breakpoint
     space
     case unLoc t of
       HsQualTy {} -> p_hsType (unLoc t)
@@ -54,8 +54,9 @@ p_hsType = \case
     inci (located x p_hsType)
   HsFunTy NoExt x y@(L _ y') -> do
     located x p_hsType
-    breakpoint
+    space
     txt "->"
+    breakpoint
     space
     case y' of
       HsFunTy{} -> p_hsType y'
@@ -86,21 +87,19 @@ p_hsType = \case
     parens N (located t p_hsType)
   HsIParamTy NoExt n t -> sitcc $ do
     located n atom
+    space
+    txt "::"
     breakpoint
-    inci $ do
-      txt "::"
-      space
-      located t p_hsType
+    inci (located t p_hsType)
   HsStarTy NoExt _ -> txt "*"
   HsKindSig NoExt t k ->
     -- NOTE Also see the comment for 'HsParTy'.
     parens N . sitcc $ do
       located t p_hsType
       space -- FIXME
-      inci $ do
-        txt "::"
-        space
-        located k p_hsType
+      txt "::"
+      space
+      inci (located k p_hsType)
   HsSpliceTy NoExt splice -> p_hsSplice splice
   HsDocTy NoExt _ _ -> error "HsDocTy"
   HsBangTy NoExt (HsSrcBang _ u s) t -> do
@@ -159,11 +158,10 @@ p_hsTyVarBndr = \case
     p_rdrName x
   KindedTyVar NoExt l k -> parens N $ do
     located l atom
+    space
+    txt "::"
     breakpoint
-    inci $ do
-      txt "::"
-      space
-      located k p_hsType
+    inci (located k p_hsType)
   XTyVarBndr NoExt -> notImplemented "XTyVarBndr"
 
 p_conDeclFields :: [LConDeclField GhcPs] -> R ()
@@ -175,11 +173,10 @@ p_conDeclField ConDeclField {..} = do
   sitcc $ sep (comma >> breakpoint)
     (located' (p_rdrName . rdrNameFieldOcc))
     cd_fld_names
+  space
+  txt "::"
   breakpoint
-  sitcc . inci $ do
-    txt "::"
-    space
-    p_hsType (unLoc cd_fld_type)
+  sitcc . inci $ p_hsType (unLoc cd_fld_type)
 p_conDeclField (XConDeclField NoExt) = notImplemented "XConDeclField"
 
 tyOpTree :: LHsType GhcPs -> OpTree (LHsType GhcPs) (Located RdrName)

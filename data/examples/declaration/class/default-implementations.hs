@@ -9,4 +9,3 @@ class Bar a where
            a
         -> Int
     bar = const 0
-

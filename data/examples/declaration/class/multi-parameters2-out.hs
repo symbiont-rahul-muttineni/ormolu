@@ -10,9 +10,9 @@ class
     e -- Rest
     f where
 
-  barbaz
-    :: a -> f
+  barbaz ::
+    a -> f
 
-  bazbar
-    :: e
-    -> f
+  bazbar ::
+    e ->
+    f

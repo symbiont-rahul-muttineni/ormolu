@@ -79,10 +79,10 @@ p_conDecl = \case
           comma
           breakpoint
           sitcc $ sep (comma >> breakpoint) p_rdrName cs
-    breakpoint
+    space
     inci $ do
       txt "::"
-      space
+      breakpoint
       p_forallBndrs (hsq_explicit con_qvars)
       forM_ con_mb_cxt p_lhsContext
       case con_args of
@@ -140,9 +140,9 @@ p_lhsContext = \case
   L _ [] -> pure ()
   ctx -> do
     located ctx p_hsContext
-    breakpoint
-    txt "=>"
     space
+    txt "=>"
+    breakpoint
 
 isGadt :: ConDecl GhcPs -> Bool
 isGadt = \case
