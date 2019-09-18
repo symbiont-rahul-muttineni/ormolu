@@ -113,10 +113,10 @@ mkComment (L l s) = L l . Comment . fmap dropTrailing $
 
 unAnnotationComment :: GHC.AnnotationComment -> Maybe String
 unAnnotationComment = \case
-  GHC.AnnDocCommentNext _ -> Nothing -- something starting with @-- |@
-  GHC.AnnDocCommentPrev _ -> Nothing -- something starting with @-- ^@
+  GHC.AnnDocCommentNext _ -> Nothing -- @-- |@
+  GHC.AnnDocCommentPrev _ -> Nothing -- @-- ^@
   GHC.AnnDocCommentNamed s -> Just s
-  GHC.AnnDocSection _ s -> Just s
+  GHC.AnnDocSection _ s -> Nothing -- @-- *@
   GHC.AnnDocOptions s -> Just s
   GHC.AnnLineComment s -> Just s
   GHC.AnnBlockComment s -> Just s

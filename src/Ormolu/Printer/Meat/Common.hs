@@ -161,6 +161,7 @@ p_trailingCommaFor xs =
 data DocStringStyle
   = Pipe
   | Caret
+  | Asterisk
 
 -- | Print a doc string, always in @-- |@ style.
 
@@ -175,8 +176,13 @@ p_hsDocString style needsNewline (L l str) = do
   txt $ case style of
     Pipe -> "-- |"
     Caret -> "-- ^"
+    Asterisk -> "-- *"
   sequence_ (intersperse sep' xs)
   when needsNewline newline
   case l of
-    UnhelpfulSpan _ -> return ()
+    UnhelpfulSpan _ ->
+      -- NOTE It's often the case that the comment itself doesn't have a
+      -- span attached to it and instead its location can be obtained from
+      -- nearest enclosing span.
+      getEnclosingSpan (const True) >>= mapM_ setLastCommentSpan
     RealSrcSpan spn -> setLastCommentSpan spn

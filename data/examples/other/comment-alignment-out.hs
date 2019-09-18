@@ -3,7 +3,8 @@ class Foo a where
   -- | Foo.
   foo ::
     Int ->
-    a -- ^ Something
+    -- | Something
+    a
 
   -- | Bar.
   bar :: a

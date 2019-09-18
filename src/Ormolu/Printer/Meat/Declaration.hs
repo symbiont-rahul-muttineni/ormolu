@@ -34,7 +34,7 @@ import Ormolu.Printer.Meat.Declaration.Warning
 import Ormolu.Printer.Meat.Type
 import Ormolu.Utils
 import RdrName (rdrNameOcc)
-import Data.List.NonEmpty (NonEmpty((:|)))
+import Data.List.NonEmpty (NonEmpty (..), (<|))
 import qualified Data.List.NonEmpty as NE
 
 p_hsDecls :: FamilyStyle -> [LHsDecl GhcPs] -> R ()
@@ -57,6 +57,12 @@ p_hsDecls style decls = sepSemi id $
 
 groupDecls :: [LHsDecl GhcPs] -> [NonEmpty (LHsDecl GhcPs)]
 groupDecls [] = []
+groupDecls (l@(L _ DocNext) : xs) =
+  -- If the first element is a doc string for next element, just include it
+  -- in the next block:
+  case groupDecls xs of
+    [] -> [l :| []]
+    (x:xs') -> (l <| x) : xs'
 groupDecls (lhdr:xs) =
    let -- Pick the first decl as the group header
        hdr = unLoc lhdr
@@ -114,6 +120,7 @@ p_tyClDecl style = \case
       tcdMeths
       tcdATs
       tcdATDefs
+      tcdDocs
   XTyClDecl {} -> notImplemented "XTyClDecl"
 
 p_instDecl :: FamilyStyle -> InstDecl GhcPs -> R ()
@@ -144,7 +151,8 @@ groupedDecls x y | Just ns <- isPragma x, Just ns' <- isPragma y = ns `intersect
 groupedDecls x (TypeSignature ns) | Just ns' <- isPragma x = ns `intersects` ns'
 groupedDecls (TypeSignature ns) x | Just ns' <- isPragma x = ns `intersects` ns'
 groupedDecls (PatternSignature ns) (Pattern n) = n `elem` ns
-groupedDecls (DocD NoExt _) _ = True
+groupedDecls DocNext _ = True
+groupedDecls _ DocPrev = True
 groupedDecls _ _ = False
 
 intersects :: Ord a => [a] -> [a] -> Bool
@@ -207,6 +215,7 @@ pattern PatternSignature n <- (patSigRdrNames -> Just n)
 pattern WarningPragma n <- (warnSigRdrNames -> Just n)
 pattern DocNext <- (DocD NoExt (DocCommentNext _))
 pattern DocPrev <- (DocD NoExt (DocCommentPrev _))
+pattern AnyDoc <- (DocD NoExt _)
 
 sigRdrNames :: HsDecl GhcPs -> Maybe [RdrName]
 sigRdrNames (SigD NoExt (TypeSig NoExt ns _)) = Just $ map unLoc ns
