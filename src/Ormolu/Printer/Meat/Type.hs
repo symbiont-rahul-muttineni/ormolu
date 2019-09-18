@@ -102,7 +102,7 @@ p_hsType = \case
       inci (located k p_hsType)
   HsSpliceTy NoExt splice -> p_hsSplice splice
   HsDocTy NoExt t str -> do
-    p_hsDocString str
+    p_hsDocString Pipe True str
     located t p_hsType
   HsBangTy NoExt (HsSrcBang _ u s) t -> do
     case u of

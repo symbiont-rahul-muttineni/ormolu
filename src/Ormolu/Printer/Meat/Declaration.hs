@@ -83,7 +83,12 @@ p_hsDecl style = \case
   AnnD NoExt x -> p_annDecl x
   RuleD NoExt x -> p_ruleDecls x
   SpliceD NoExt x -> p_spliceDecl x
-  DocD _ _ -> notImplemented "DocD"
+  DocD NoExt docDecl ->
+    case docDecl of
+      DocCommentNext str -> p_hsDocString Pipe False (noLoc str)
+      DocCommentPrev str -> p_hsDocString Caret False (noLoc str)
+      DocCommentNamed _ _ -> notImplemented "DocD: DocCommentNamed"
+      DocGroup _ _ -> notImplemented "DocD: DocGroup"
   RoleAnnotD NoExt x -> p_roleAnnot x
   XHsDecl _ -> notImplemented "XHsDecl"
 
@@ -139,6 +144,7 @@ groupedDecls x y | Just ns <- isPragma x, Just ns' <- isPragma y = ns `intersect
 groupedDecls x (TypeSignature ns) | Just ns' <- isPragma x = ns `intersects` ns'
 groupedDecls (TypeSignature ns) x | Just ns' <- isPragma x = ns `intersects` ns'
 groupedDecls (PatternSignature ns) (Pattern n) = n `elem` ns
+groupedDecls (DocD NoExt _) _ = True
 groupedDecls _ _ = False
 
 intersects :: Ord a => [a] -> [a] -> Bool
@@ -199,6 +205,8 @@ pattern TypeSignature n <- (sigRdrNames -> Just n)
 pattern FunctionBody n <- (funRdrNames -> Just n)
 pattern PatternSignature n <- (patSigRdrNames -> Just n)
 pattern WarningPragma n <- (warnSigRdrNames -> Just n)
+pattern DocNext <- (DocD NoExt (DocCommentNext _))
+pattern DocPrev <- (DocD NoExt (DocCommentPrev _))
 
 sigRdrNames :: HsDecl GhcPs -> Maybe [RdrName]
 sigRdrNames (SigD NoExt (TypeSig NoExt ns _)) = Just $ map unLoc ns

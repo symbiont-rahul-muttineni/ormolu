@@ -12,19 +12,18 @@ module Ormolu.Printer.Meat.Common
   , p_qualName
   , p_infixDefHelper
   , p_trailingCommaFor
+  , DocStringStyle (..)
   , p_hsDocString
   )
 where
 
 import Control.Monad
-import Data.Bool (bool)
-import Data.List (isPrefixOf)
+import Data.List (isPrefixOf, intersperse)
 import GHC hiding (GhcPs, IE)
 import Name (nameStableString)
 import OccName (OccName (..))
 import Ormolu.Printer.Combinators
 import Ormolu.Printer.Internal (setLastCommentSpan)
-import Ormolu.Utils
 import RdrName (RdrName (..))
 import qualified Data.Text as T
 
@@ -157,15 +156,27 @@ p_trailingCommaFor xs =
     (return ())
     (unless (null xs) comma)
 
+-- | Doc string style.
+
+data DocStringStyle
+  = Pipe
+  | Caret
+
 -- | Print a doc string, always in @-- |@ style.
 
-p_hsDocString :: LHsDocString -> R ()
-p_hsDocString (L (UnhelpfulSpan _) _) =
-  notImplemented "comment with unhelpful span"
-p_hsDocString (L (RealSrcSpan spn) str) = do
-  let xs = lines (unpackHDS str)
-  sitcc . forM_ (zip xs (True : repeat False)) $ \(s, isFirst) -> do
-    txt $ bool "--" "-- |" isFirst
-    txt (T.pack s)
-    newline
-  setLastCommentSpan spn
+p_hsDocString
+  :: DocStringStyle             -- ^ Doc string style
+  -> Bool                       -- ^ Finish the doc string with a newline
+  -> LHsDocString               -- ^ The doc string to render
+  -> R ()
+p_hsDocString style needsNewline (L l str) = do
+  let xs = txt . T.pack <$> lines (unpackHDS str)
+      sep' = newline >> txt "--"
+  txt $ case style of
+    Pipe -> "-- |"
+    Caret -> "-- ^"
+  sequence_ (intersperse sep' xs)
+  when needsNewline newline
+  case l of
+    UnhelpfulSpan _ -> return ()
+    RealSrcSpan spn -> setLastCommentSpan spn
