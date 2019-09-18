@@ -1,14 +1,17 @@
 foo ::
-  Int -> -- ^ Documentation
+  -- | Documentation
+  Int ->
   Bool
 foo _ = True
 
 foo ::
   Foo a =>
-  Int -> -- ^ Foo
+  -- | Foo
+  Int ->
   Int
 
 foo ::
   Foo a =>
-  Int -> -- ^ Foo
+  -- | Foo
+  Int ->
   Int

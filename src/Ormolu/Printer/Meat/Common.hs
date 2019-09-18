@@ -12,16 +12,21 @@ module Ormolu.Printer.Meat.Common
   , p_qualName
   , p_infixDefHelper
   , p_trailingCommaFor
+  , p_hsDocString
   )
 where
 
 import Control.Monad
+import Data.Bool (bool)
 import Data.List (isPrefixOf)
 import GHC hiding (GhcPs, IE)
 import Name (nameStableString)
 import OccName (OccName (..))
 import Ormolu.Printer.Combinators
+import Ormolu.Printer.Internal (setLastCommentSpan)
+import Ormolu.Utils
 import RdrName (RdrName (..))
+import qualified Data.Text as T
 
 -- | Data and type family style.
 
@@ -151,3 +156,16 @@ p_trailingCommaFor xs =
   vlayout
     (return ())
     (unless (null xs) comma)
+
+-- | Print a doc string, always in @-- |@ style.
+
+p_hsDocString :: LHsDocString -> R ()
+p_hsDocString (L (UnhelpfulSpan _) _) =
+  notImplemented "comment with unhelpful span"
+p_hsDocString (L (RealSrcSpan spn) str) = do
+  let xs = lines (unpackHDS str)
+  sitcc . forM_ (zip xs (True : repeat False)) $ \(s, isFirst) -> do
+    txt $ bool "--" "-- |" isFirst
+    txt (T.pack s)
+    newline
+  setLastCommentSpan spn

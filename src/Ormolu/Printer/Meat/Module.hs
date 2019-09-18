@@ -32,6 +32,7 @@ p_hsModule pragmas (L moduleSpan HsModule {..}) = do
   switchLayout spans' $ do
     p_pragmas pragmas
     newline
+    forM_ hsmodHaddockModHeader p_hsDocString
     case hsmodName of
       Nothing -> return ()
       Just hsmodName' -> do

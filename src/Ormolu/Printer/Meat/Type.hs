@@ -101,7 +101,9 @@ p_hsType = \case
       space
       inci (located k p_hsType)
   HsSpliceTy NoExt splice -> p_hsSplice splice
-  HsDocTy NoExt _ _ -> error "HsDocTy"
+  HsDocTy NoExt t str -> do
+    p_hsDocString str
+    located t p_hsType
   HsBangTy NoExt (HsSrcBang _ u s) t -> do
     case u of
       SrcUnpack -> txt "{-# UNPACK #-}" >> space
